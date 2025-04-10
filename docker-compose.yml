@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  react-app:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Maps the local 'src' and 'public' directories to the container's 'src' and 'public' directories
+      - ./frontend/src:/react-docker-example/src
+      - ./frontend/public:/react-docker-example/public
+      # Optional: to avoid issues with node_modules during development, you can use a volume for node_modules
+      - /react-docker-example/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Helps with file change detection in Docker (important for React's hot reload)
+    depends_on:
+      - flask
+  flask:
+    build: ./api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+    environment:
+      - MONGO_URI=mongodb://mongo1:27017/container_security
+    depends_on:
+      - mongo1
+  mongo1:
+    image: mongo:7.0
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo1_data:/data/db
+      - mongo1_config:/data/configdb
+    restart: always
+
+
+volumes:
+  mongo1_data:
+  mongo1_config:
